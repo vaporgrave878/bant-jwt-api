@@ -87,17 +87,30 @@ public class AdminController {
         JwtUser user = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Optional<UserRequest> userRequestById = userRequestRepository.findById(id);
         String email = userRequestById.get().getUserEmail();
-        User requestingUser = userRepository.findByEmail(email);
-        loanRepository.save(loan);
-        List<Loan> loans = requestingUser.getLoans();
-        if (loans == null)
-            loans = new ArrayList<>();
-        loans.add(loan);
-        requestingUser.setLoans(loans);
-        userRepository.save(requestingUser);
-        UserRequest userRequest = userRequestRepository.findByIdAndUserEmail(id, email);
-        userRequest.setStatus(Status.NOT_ACTIVE);
-        userRequest.setAdminClosed(user.getEmail());
-        userRequestRepository.save(userRequest);
+        loan.setStatus(Status.ACTIVE);
+        if (!userRequestById.get().getStatus().equals(Status.NOT_ACTIVE)){
+            User requestingUser = userRepository.findByEmail(email);
+
+            List<Loan> loans = requestingUser.getLoans();
+
+            int _id = loans.size();
+            if (loans.isEmpty() || loans == null){
+                loans = new ArrayList<>();
+                _id = 1;
+            }
+
+
+            loan.setCreditId(requestingUser.getEmail() + "_" + _id);
+            loans.add(loan);
+
+            requestingUser.setLoans(loans);
+            loanRepository.save(loan);
+            userRepository.save(requestingUser);
+
+            UserRequest userRequest = userRequestRepository.findByIdAndUserEmail(id, email);
+            userRequest.setStatus(Status.NOT_ACTIVE);
+            userRequest.setAdminClosed(user.getEmail());
+            userRequestRepository.save(userRequest);
+        }
     }
 }

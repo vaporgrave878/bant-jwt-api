@@ -85,7 +85,7 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String token) {
-        try {
+//        try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
 
 
@@ -93,9 +93,9 @@ public class JwtTokenProvider {
                 return false;
 
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new JwtAuthenticationException("JWT token is expired or invalid");
-        }
+//        } catch (JwtException | IllegalArgumentException e) {
+//            throw new JwtAuthenticationException("JWT token is expired or invalid");
+//        }
     }
 
     private List<String> getRoleName(List<Role> userRoles) {

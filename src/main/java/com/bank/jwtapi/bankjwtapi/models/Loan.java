@@ -8,12 +8,18 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 public class Loan {
     private String id,
-        date;
+        date,
+        creditId;
     private int sum,
             perc,
             period,
-            monthlyPayment;
+            monthlyPayment,
+            sumToClose,
+            alreadyPayed;
+
 
     @DBRef
     private User user;
+
+    private Status status;
 }

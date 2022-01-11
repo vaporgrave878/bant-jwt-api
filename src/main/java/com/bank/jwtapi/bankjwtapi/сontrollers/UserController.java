@@ -4,6 +4,7 @@ import com.bank.jwtapi.bankjwtapi.dto.AuthenticationRequestDto;
 import com.bank.jwtapi.bankjwtapi.dto.UserDto;
 import com.bank.jwtapi.bankjwtapi.models.*;
 import com.bank.jwtapi.bankjwtapi.repos.DebitCardRepository;
+import com.bank.jwtapi.bankjwtapi.repos.LoanRepository;
 import com.bank.jwtapi.bankjwtapi.repos.UserRepository;
 import com.bank.jwtapi.bankjwtapi.repos.UserRequestRepository;
 import com.bank.jwtapi.bankjwtapi.security.jwt.JwtTokenProvider;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -32,14 +34,16 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserRequestRepository userRequestRepository;
     private final DebitCardRepository debitCardRepository;
+    private final LoanRepository loanRepository;
 
-    public UserController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, UserServiceImpl userService, UserRepository userRepository, UserRequestRepository userRequestRepository, DebitCardRepository debitCardRepository) {
+    public UserController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, UserServiceImpl userService, UserRepository userRepository, UserRequestRepository userRequestRepository, DebitCardRepository debitCardRepository, LoanRepository loanRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
         this.userService = userService;
         this.userRepository = userRepository;
         this.userRequestRepository = userRequestRepository;
         this.debitCardRepository = debitCardRepository;
+        this.loanRepository = loanRepository;
     }
 
     @PostMapping("/register")
@@ -124,16 +128,37 @@ public class UserController {
         return new ResponseEntity<>(loans, HttpStatus.OK);
     }
 
-    @PostMapping("/user/change_balance")
+    @PostMapping("/change_balance")
     public ResponseEntity<DebitCard> changeBalance(@RequestParam String number, @RequestParam int sum, @RequestParam String action) {
         DebitCard card = debitCardRepository.findByNumber(number);
         int balance = card.getBalance();
         if (action.equals("add"))
             balance += sum;
-        else if (action.equals("subtract"))
+        else if (action.equals("subtract") || balance - sum >= 0)
             balance -= sum;
         card.setBalance(balance);
         debitCardRepository.save(card);
         return new ResponseEntity<>(card, HttpStatus.OK);
     }
+
+    @PostMapping("/pay_loan/{creditId}")
+    public ResponseEntity<Loan> payLoan(@RequestParam String number, @PathVariable String creditId) {
+        Loan loan = loanRepository.findByCreditId(creditId);
+        DebitCard card = debitCardRepository.findByNumber(number);
+
+        ResponseEntity<Loan> response = new ResponseEntity<>(loan, HttpStatus.OK);
+        int balance = card.getBalance();
+        if (balance <= 0) {
+            return response;
+        }
+        int sum = loan.getMonthlyPayment();
+        int payment = balance - sum;
+        card.setBalance(payment);
+        int alreadyPayed = loan.getAlreadyPayed();
+        loan.setAlreadyPayed(alreadyPayed + sum);
+        loanRepository.save(loan);
+        debitCardRepository.save(card);
+        return response;
+    }
+
 }
