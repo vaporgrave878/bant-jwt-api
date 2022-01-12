@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -148,7 +147,7 @@ public class UserController {
 
         ResponseEntity<Loan> response = new ResponseEntity<>(loan, HttpStatus.OK);
         int balance = card.getBalance();
-        if (balance <= 0) {
+        if (balance <= 0 || loan.getStatus().equals(Status.NOT_ACTIVE)) {
             return response;
         }
         int sum = loan.getMonthlyPayment();
@@ -156,6 +155,8 @@ public class UserController {
         card.setBalance(payment);
         int alreadyPayed = loan.getAlreadyPayed();
         loan.setAlreadyPayed(alreadyPayed + sum);
+        if (loan.getAlreadyPayed() >= loan.getSumToClose())
+            loan.setStatus(Status.NOT_ACTIVE);
         loanRepository.save(loan);
         debitCardRepository.save(card);
         return response;

@@ -69,6 +69,7 @@ public class AdminController {
         if (!userRequestById.get().getStatus().equals(Status.NOT_ACTIVE)){
             String email = userRequestById.get().getUserEmail();
             User requestingUser = userRepository.findByEmail(email);
+            card.setUser(requestingUser);
             debitCardRepository.save(card);
             List<DebitCard> cards = requestingUser.getDebitCards();
             cards.add(card);
@@ -101,6 +102,7 @@ public class AdminController {
 
 
             loan.setCreditId(requestingUser.getEmail() + "_" + _id);
+            loan.setUser(requestingUser);
             loans.add(loan);
 
             requestingUser.setLoans(loans);

@@ -12,6 +12,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "no-front-bank-users")
 public class User {
 
@@ -40,22 +41,22 @@ public class User {
     private List<Status> statuses;
 
 
-    public User(String name, String surname, String birthdate, String sex, String email, String password, List<DebitCard> debitCards, List<Loan> loans) {
-        this.name = name;
-        this.surname = surname;
-        this.birthdate = birthdate;
-        this.sex = sex;
-        this.email = email;
-        this.password = password;
-        this.debitCards = debitCards;
-        this.loans = loans;
-    }
-
-    public User(List<DebitCard> debitCards, List<Loan> loans) {
-        this.debitCards = debitCards;
-        this.loans = loans;
-    }
-
+//    public User(String name, String surname, String birthdate, String sex, String email, String password, List<DebitCard> debitCards, List<Loan> loans) {
+//        this.name = name;
+//        this.surname = surname;
+//        this.birthdate = birthdate;
+//        this.sex = sex;
+//        this.email = email;
+//        this.password = password;
+//        this.debitCards = debitCards;
+//        this.loans = loans;
+//    }
+//
+//    public User(List<DebitCard> debitCards, List<Loan> loans) {
+//        this.debitCards = debitCards;
+//        this.loans = loans;
+//    }
+//
     public User(String name, String surname, String birthdate, String sex, String email, String password, List<DebitCard> debitCards, List<Loan> loans, List<Role> roles, List<Status> statuses) {
         this.name = name;
         this.surname = surname;

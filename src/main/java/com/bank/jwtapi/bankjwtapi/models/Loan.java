@@ -1,6 +1,8 @@
 package com.bank.jwtapi.bankjwtapi.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,6 +21,7 @@ public class Loan {
 
 
     @DBRef
+    @JsonIgnore
     private User user;
 
     private Status status;
