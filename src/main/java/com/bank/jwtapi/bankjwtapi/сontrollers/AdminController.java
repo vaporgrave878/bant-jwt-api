@@ -1,5 +1,6 @@
 package com.bank.jwtapi.bankjwtapi.сontrollers;
 
+import com.bank.jwtapi.bankjwtapi.exceptions.UserRequestNotFoundException;
 import com.bank.jwtapi.bankjwtapi.models.*;
 import com.bank.jwtapi.bankjwtapi.repos.DebitCardRepository;
 import com.bank.jwtapi.bankjwtapi.repos.LoanRepository;
@@ -9,6 +10,7 @@ import com.bank.jwtapi.bankjwtapi.security.jwt.JwtUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -52,21 +54,22 @@ public class AdminController {
     @GetMapping("/{email}/user_loans")
     public ResponseEntity<List<Loan>> getUserLoans(@PathVariable String email) {
         User user = userRepository.findByEmail(email);
-        List<Loan> loans = user.getLoans();;
+        List<Loan> loans = user.getLoans();
         return new ResponseEntity<>(loans, HttpStatus.OK);
     }
 
     @GetMapping("/requests")
-    public ResponseEntity<List<UserRequest>> seeRequests(){
+    public ResponseEntity<List<UserRequest>> seeRequests() {
         List<UserRequest> requests = userRequestRepository.findAll();
         return new ResponseEntity<>(requests, HttpStatus.OK);
     }
 
     @PostMapping("/{id}/add_card_to_user")
-    public void addCardToUser(@PathVariable String id, @RequestBody DebitCard card){
+    public void addCardToUser(@PathVariable String id, @RequestBody DebitCard card) throws UserRequestNotFoundException {
         JwtUser user = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<UserRequest> userRequestById = userRequestRepository.findById(id);
-        if (!userRequestById.get().getStatus().equals(Status.NOT_ACTIVE)){
+        Optional<UserRequest> userRequestById = Optional.ofNullable(userRequestRepository.findById(id)
+                .orElseThrow(() -> new UserRequestNotFoundException("Request with id " + id + " not found ")));
+        if (!userRequestById.get().getStatus().equals(Status.NOT_ACTIVE)) {
             String email = userRequestById.get().getUserEmail();
             User requestingUser = userRepository.findByEmail(email);
             card.setUser(requestingUser);
@@ -84,18 +87,19 @@ public class AdminController {
     }
 
     @PostMapping("/{id}/add_loan_to_user")
-    public void addLoanToUser(@PathVariable String id, @RequestBody Loan loan){
+    public void addLoanToUser(@PathVariable String id, @RequestBody Loan loan) throws UserRequestNotFoundException {
         JwtUser user = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<UserRequest> userRequestById = userRequestRepository.findById(id);
+        Optional<UserRequest> userRequestById = Optional.ofNullable(userRequestRepository.findById(id)
+                .orElseThrow(() -> new UserRequestNotFoundException("Request with id " + id + " not found ")));
         String email = userRequestById.get().getUserEmail();
         loan.setStatus(Status.ACTIVE);
-        if (!userRequestById.get().getStatus().equals(Status.NOT_ACTIVE)){
+        if (!userRequestById.get().getStatus().equals(Status.NOT_ACTIVE)) {
             User requestingUser = userRepository.findByEmail(email);
 
             List<Loan> loans = requestingUser.getLoans();
 
             int _id = loans.size();
-            if (loans.isEmpty() || loans == null){
+            if (loans.isEmpty() || loans == null) {
                 loans = new ArrayList<>();
                 _id = 1;
             }
