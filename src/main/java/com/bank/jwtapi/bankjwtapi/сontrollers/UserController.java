@@ -2,164 +2,131 @@ package com.bank.jwtapi.bankjwtapi.сontrollers;
 
 import com.bank.jwtapi.bankjwtapi.dto.AuthenticationRequestDto;
 import com.bank.jwtapi.bankjwtapi.dto.UserDto;
-import com.bank.jwtapi.bankjwtapi.models.*;
-import com.bank.jwtapi.bankjwtapi.repos.DebitCardRepository;
-import com.bank.jwtapi.bankjwtapi.repos.LoanRepository;
-import com.bank.jwtapi.bankjwtapi.repos.UserRepository;
-import com.bank.jwtapi.bankjwtapi.repos.UserRequestRepository;
-import com.bank.jwtapi.bankjwtapi.security.jwt.JwtTokenProvider;
 import com.bank.jwtapi.bankjwtapi.security.jwt.JwtUser;
 import com.bank.jwtapi.bankjwtapi.service.impl.UserServiceImpl;
-import org.springframework.http.HttpStatus;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
+import javax.mail.MessagingException;
 import java.util.Map;
 
 @RestController
+@AllArgsConstructor
 public class UserController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
     private final UserServiceImpl userService;
-    private final UserRepository userRepository;
-    private final UserRequestRepository userRequestRepository;
-    private final DebitCardRepository debitCardRepository;
-    private final LoanRepository loanRepository;
 
-    public UserController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, UserServiceImpl userService, UserRepository userRepository, UserRequestRepository userRequestRepository, DebitCardRepository debitCardRepository, LoanRepository loanRepository) {
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.userRequestRepository = userRequestRepository;
-        this.debitCardRepository = debitCardRepository;
-        this.loanRepository = loanRepository;
-    }
 
     @PostMapping("/register")
-    public void addUser(@RequestBody User user) {
-        userService.register(user);
+    public void addUser(@RequestBody UserDto userDto) {
+        userService.register(userDto);
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody AuthenticationRequestDto requestDto) {
-        try {
-            String username = requestDto.getEmail();
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, requestDto.getPassword()));
-            User user = userService.findByUsername(username);
-
-            if (user == null) {
-                throw new UsernameNotFoundException("User with username: " + username + " not found");
-            }
-
-            String token = jwtTokenProvider.createToken(username, user.getRoles());
-
-            Map<Object, Object> response = new HashMap<>();
-            response.put("username", username);
-            response.put("token", token);
-
-            return ResponseEntity.ok(response);
-        } catch (AuthenticationException e) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
+    public ResponseEntity<Map<String, String>> login(@RequestBody AuthenticationRequestDto requestDto) {
+        return userService.login(requestDto);
     }
 
-    @GetMapping(value = "/user")
-    public ResponseEntity<UserDto> getUserByEmail() {
+//    @GetMapping(value = "/user")
+//    public ResponseEntity<UserDto> getUserByEmail() {
+//        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String email = jwtUser.getEmail();
+//        User user = userRepository.findByEmail(email);
+//
+//        if (user == null)
+//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//
+//        UserDto result = UserDto.fromUser(user);
+//
+//        return new ResponseEntity<>(result, HttpStatus.OK);
+//    }
+
+    @GetMapping("/send-message")
+    public void sendEmail() throws MessagingException {
         JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = jwtUser.getEmail();
-        User user = userRepository.findByEmail(email);
-
-        if (user == null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
-        UserDto result = UserDto.fromUser(user);
-
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        userService.sendVerificationEmail(jwtUser);
     }
 
-    @PostMapping("/add_card")
-    public void addCard() {
-        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = jwtUser.getEmail();
-        User user = userRepository.findByEmail(email);
-        UserRequest userRequest = new UserRequest("Add a card", user.getEmail(), Status.ACTIVE);
-        userRequestRepository.save(userRequest);
-    }
 
-    @PostMapping("/add_loan")
-    public void addLoan() {
-        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = jwtUser.getEmail();
-        User user = userRepository.findByEmail(email);
-        UserRequest userRequest = new UserRequest("Add a loan", user.getEmail(), Status.ACTIVE);
-        userRequestRepository.save(userRequest);
-    }
-
-    @GetMapping("/my_cards")
-    public ResponseEntity<List<DebitCard>> myCards() {
-        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = jwtUser.getEmail();
-        User user = userRepository.findByEmail(email);
-        List<DebitCard> cards = user.getDebitCards();
-        if (cards == null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        return new ResponseEntity<>(cards, HttpStatus.OK);
-    }
-
-    @GetMapping("/my_loans")
-    public ResponseEntity<List<Loan>> myLoans() {
-        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = jwtUser.getEmail();
-        User user = userRepository.findByEmail(email);
-        List<Loan> loans = user.getLoans();
-        if (loans == null)
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        return new ResponseEntity<>(loans, HttpStatus.OK);
-    }
-
-    @PostMapping("/change_balance")
-    public ResponseEntity<DebitCard> changeBalance(@RequestParam String number, @RequestParam int sum, @RequestParam String action) {
-        DebitCard card = debitCardRepository.findByNumber(number);
-        int balance = card.getBalance();
-        if (action.equals("add"))
-            balance += sum;
-        else if (action.equals("subtract") || balance - sum >= 0)
-            balance -= sum;
-        card.setBalance(balance);
-        debitCardRepository.save(card);
-        return new ResponseEntity<>(card, HttpStatus.OK);
-    }
-
-    @PostMapping("/pay_loan/{creditId}")
-    public ResponseEntity<Loan> payLoan(@RequestParam String number, @PathVariable String creditId) {
-        Loan loan = loanRepository.findByCreditId(creditId);
-        DebitCard card = debitCardRepository.findByNumber(number);
-
-        ResponseEntity<Loan> response = new ResponseEntity<>(loan, HttpStatus.OK);
-        int balance = card.getBalance();
-        if (balance <= 0 || loan.getStatus().equals(Status.NOT_ACTIVE)) {
-            return response;
-        }
-        int sum = loan.getMonthlyPayment();
-        int payment = balance - sum;
-        card.setBalance(payment);
-        int alreadyPayed = loan.getAlreadyPayed();
-        loan.setAlreadyPayed(alreadyPayed + sum);
-        if (loan.getAlreadyPayed() >= loan.getSumToClose())
-            loan.setStatus(Status.NOT_ACTIVE);
-        loanRepository.save(loan);
-        debitCardRepository.save(card);
-        return response;
-    }
+    //TODO: move to service
+//    @PostMapping("/add_card")
+//    public void addCard() {
+//        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String email = jwtUser.getEmail();
+//        User user = userRepository.findByEmail(email);
+//        UserRequest userRequest = new UserRequest("Add a card", user.getEmail(), Status.ACTIVE);
+//        userRequestRepository.save(userRequest);
+//    }
+//
+//    @PostMapping("/add_loan")
+//    public void addLoan() {
+//        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String email = jwtUser.getEmail();
+//        User user = userRepository.findByEmail(email);
+//        UserRequest userRequest = new UserRequest("Add a loan", user.getEmail(), Status.ACTIVE);
+//        userRequestRepository.save(userRequest);
+//    }
+//
+//    @GetMapping("/my_cards")
+//    public ResponseEntity<List<DebitCard>> myCards() {
+//        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String email = jwtUser.getEmail();
+//        User user = userRepository.findByEmail(email);
+//        List<DebitCard> cards = user.getDebitCards();
+//        if (cards == null)
+//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//        return new ResponseEntity<>(cards, HttpStatus.OK);
+//    }
+//
+//    @GetMapping("/my_loans")
+//    public ResponseEntity<List<Loan>> myLoans() {
+//        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String email = jwtUser.getEmail();
+//        User user = userRepository.findByEmail(email);
+//        List<Loan> loans = user.getLoans();
+//        if (loans == null)
+//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//        return new ResponseEntity<>(loans, HttpStatus.OK);
+//    }
+//
+//    @PostMapping("/change_balance")
+//    public ResponseEntity<DebitCard> changeBalance(@RequestParam String number, @RequestParam int sum, @RequestParam String action) {
+//        DebitCard card = debitCardRepository.findByNumber(number);
+//        int balance = card.getBalance();
+//        if (action.equals("add"))
+//            balance += sum;
+//        else if (action.equals("subtract") || balance - sum >= 0)
+//            balance -= sum;
+//        card.setBalance(balance);
+//        debitCardRepository.save(card);
+//        return new ResponseEntity<>(card, HttpStatus.OK);
+//    }
+//
+//    @PostMapping("/pay_loan/{creditId}")
+//    public ResponseEntity<Loan> payLoan(@RequestParam String number, @PathVariable String creditId) {
+//        Loan loan = loanRepository.findByCreditId(creditId);
+//        DebitCard card = debitCardRepository.findByNumber(number);
+//
+//        ResponseEntity<Loan> response = new ResponseEntity<>(loan, HttpStatus.OK);
+//        int balance = card.getBalance();
+//        if (balance <= 0 || loan.getStatus().equals(Status.NOT_ACTIVE)) {
+//            return response;
+//        }
+//        int sum = loan.getMonthlyPayment();
+//        int payment = balance - sum;
+//        card.setBalance(payment);
+//        int alreadyPayed = loan.getAlreadyPayed();
+//        loan.setAlreadyPayed(alreadyPayed + sum);
+//        if (loan.getAlreadyPayed() >= loan.getSumToClose())
+//            loan.setStatus(Status.NOT_ACTIVE);
+//        loanRepository.save(loan);
+//        debitCardRepository.save(card);
+//        return response;
+//    }
 
 }

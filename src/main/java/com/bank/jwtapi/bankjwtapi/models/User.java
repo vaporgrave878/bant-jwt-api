@@ -1,6 +1,7 @@
 package com.bank.jwtapi.bankjwtapi.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -14,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "no-front-bank-users")
+@Builder
 public class User {
 
     @Id

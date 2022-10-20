@@ -17,37 +17,35 @@ public class UserDto {
     private String sex;
     private String email;
     private String password;
-    private List<DebitCard> debitCards;
-    private List<Loan> loans;
     private List<Role> roles;
     private List<Status> statuses;
 
 
-    public User toUser(){
-        return new User(
-                name,
-                surname,
-                birthdate,
-                sex,
-                email,
-                password,
-                debitCards,
-                loans,
-                roles,
-                statuses
-        );
-    }
+//    public User toUser(){
+////        return new User(
+////                name,
+////                surname,
+////                birthdate,
+////                sex,
+////                email,
+////                password,
+////                roles,
+////                statuses
+////        );
+//        return User.builder()
+//                .loans().build();
+//    }
 
-    public static UserDto fromUser(User user){
-        return new UserDto(user.getName(),
-                user.getSurname(),
-                user.getBirthdate(),
-                user.getSex(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getDebitCards(),
-                user.getLoans(),
-                user.getRoles(),
-                user.getStatuses());
-    }
+//    public static UserDto fromUser(User user){
+//        return new UserDto(user.getName(),
+//                user.getSurname(),
+//                user.getBirthdate(),
+//                user.getSex(),
+//                user.getEmail(),
+//                user.getPassword(),
+//                user.getDebitCards(),
+//                user.getLoans(),
+//                user.getRoles(),
+//                user.getStatuses());
+//    }
 }

@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,7 +98,6 @@ public class AdminController {
             User requestingUser = userRepository.findByEmail(email);
 
             List<Loan> loans = requestingUser.getLoans();
-
             int _id = loans.size();
             if (loans.isEmpty() || loans == null) {
                 loans = new ArrayList<>();

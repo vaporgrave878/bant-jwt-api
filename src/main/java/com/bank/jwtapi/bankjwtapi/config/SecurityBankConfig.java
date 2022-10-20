@@ -19,14 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static com.bank.jwtapi.bankjwtapi.models.Role.*;
 
 @Configuration
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityBankConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final JwtUserDetailsService userDetailsService;
 
     @Autowired
-    public SecurityConfig(JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, JwtUserDetailsService userDetailsService) {
+    public SecurityBankConfig(JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, JwtUserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
@@ -47,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/register", "/login")
+                .antMatchers("/register", "/login", "/pay-item/**")
                     .permitAll()
                 .antMatchers("/admin/*")
                     .hasRole(String.valueOf(ADMIN))

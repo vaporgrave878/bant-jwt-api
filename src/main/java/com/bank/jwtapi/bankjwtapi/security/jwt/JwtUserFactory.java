@@ -20,6 +20,7 @@ public final class JwtUserFactory {
                 idCount++,
                 user.getPassword(),
                 user.getEmail(),
+                user.getName(),
                 user.getStatuses().contains(Status.ACTIVE),
                 mapToGrantedAuthorities(new ArrayList<>(user.getRoles()))
         );
@@ -31,6 +32,7 @@ public final class JwtUserFactory {
                 .map(role ->
                         new SimpleGrantedAuthority("ROLE_" + role.toString())
                 ).collect(Collectors.toList());
+//        return List.of(new SimpleGrantedAuthority(user.getROle))
     }
 }
 
