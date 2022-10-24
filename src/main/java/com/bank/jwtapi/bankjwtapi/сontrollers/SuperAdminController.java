@@ -49,18 +49,18 @@ public class SuperAdminController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @PostMapping("/{email}/set_admin")
-    public ResponseEntity<User> changeRoleToAdmin(@PathVariable String email) {
-        User user = userRepository.findByEmail(email);
-        if (!user.getRoles().contains(Role.SUPERADMIN)){
-            Role newRole = Role.ADMIN;
-            List<Role> userRoles = new ArrayList<>();
-            userRoles.add(newRole);
-            user.setRoles(userRoles);
-            userRepository.save(user);
-        }
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
+//    @PostMapping("/{email}/set_admin")
+//    public ResponseEntity<User> changeRoleToAdmin(@PathVariable String email) {
+//        User user = userRepository.findByEmail(email);
+//        if (!user.getRoles().contains(Role.SUPERADMIN)){
+//            Role newRole = Role.ADMIN;
+//            List<Role> userRoles = new ArrayList<>();
+//            userRoles.add(newRole);
+//            user.setRoles(userRoles);
+//            userRepository.save(user);
+//        }
+//        return new ResponseEntity<>(user, HttpStatus.OK);
+//    }
 
     @PostMapping("/register_admin")
     public ResponseEntity<User> createAdmin(@RequestBody User user) {

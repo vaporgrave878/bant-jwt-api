@@ -1,5 +1,6 @@
 package com.bank.jwtapi.bankjwtapi.security;
 
+import com.bank.jwtapi.bankjwtapi.exceptions.UserNotFoundException;
 import com.bank.jwtapi.bankjwtapi.models.User;
 import com.bank.jwtapi.bankjwtapi.repos.UserRepository;
 import com.bank.jwtapi.bankjwtapi.security.jwt.JwtUserFactory;
@@ -20,10 +21,10 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User with email" + email + "not found"));
 
-        if (user == null)
-            throw new UsernameNotFoundException("User with email" + email + "not found");
+//        if (user == null)
+//            throw new UsernameNotFoundException("User with email" + email + "not found");
 
         return JwtUserFactory.create(user);
     }

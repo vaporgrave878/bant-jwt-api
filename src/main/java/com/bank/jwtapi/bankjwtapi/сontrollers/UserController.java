@@ -2,6 +2,8 @@ package com.bank.jwtapi.bankjwtapi.сontrollers;
 
 import com.bank.jwtapi.bankjwtapi.dto.AuthenticationRequestDto;
 import com.bank.jwtapi.bankjwtapi.dto.UserDto;
+import com.bank.jwtapi.bankjwtapi.exceptions.UserNotFoundException;
+import com.bank.jwtapi.bankjwtapi.models.User;
 import com.bank.jwtapi.bankjwtapi.security.jwt.JwtUser;
 import com.bank.jwtapi.bankjwtapi.service.impl.UserServiceImpl;
 import lombok.AllArgsConstructor;
@@ -46,9 +48,13 @@ public class UserController {
 //        return new ResponseEntity<>(result, HttpStatus.OK);
 //    }
 
+    @GetMapping("/user")
+    public User getUser(JwtUser jwtUser) throws UserNotFoundException {
+       return userService.getUser(jwtUser.getEmail());
+    }
+
     @GetMapping("/send-message")
-    public void sendEmail() throws MessagingException {
-        JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public void sendEmail(JwtUser jwtUser) throws MessagingException {
         userService.sendVerificationEmail(jwtUser);
     }
 
