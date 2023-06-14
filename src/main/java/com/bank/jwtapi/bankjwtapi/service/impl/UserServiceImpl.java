@@ -3,27 +3,22 @@ package com.bank.jwtapi.bankjwtapi.service.impl;
 import com.bank.jwtapi.bankjwtapi.dto.AuthenticationRequestDto;
 import com.bank.jwtapi.bankjwtapi.dto.UserDto;
 import com.bank.jwtapi.bankjwtapi.exceptions.UserNotFoundException;
+import com.bank.jwtapi.bankjwtapi.exceptions.UserNotRelatedException;
 import com.bank.jwtapi.bankjwtapi.models.Role;
 import com.bank.jwtapi.bankjwtapi.models.Status;
 import com.bank.jwtapi.bankjwtapi.models.User;
 import com.bank.jwtapi.bankjwtapi.repos.UserRepository;
 import com.bank.jwtapi.bankjwtapi.security.jwt.JwtTokenProvider;
-import com.bank.jwtapi.bankjwtapi.security.jwt.JwtUser;
 import com.bank.jwtapi.bankjwtapi.service.UserService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,21 +64,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(UserDto userDto) {
-        List<Role> userRoles = new ArrayList<>();
-        userRoles.add(Role.CLIENT);
+//        List<Role> userRoles = new ArrayList<>();
+//        userRoles.add(Role.CLIENT);
         List<Status> userStatuses = new ArrayList<>();
         userStatuses.add(Status.ACTIVE);
         userRepository.save(User.builder()
                         .name(userDto.getName() != null ? userDto.getName(): "UserName")
                         .surname(userDto.getSurname() != null ? userDto.getSurname(): "UserSurname")
                         .birthdate(userDto.getBirthdate())
-                        .debitCards(new ArrayList<>())
+//                        .debitCards(new ArrayList<>())
                         .sex(userDto.getSex())
                         .email(userDto.getEmail())
                         .password(passwordEncoder.encode(userDto.getPassword()))
-                        .roles(userRoles)
+                        .role(Role.CLIENT)
                         .statuses(userStatuses)
-                        .loans(new ArrayList<>())
+//                        .loans(new ArrayList<>())
                 .build());
     }
 
@@ -99,7 +94,7 @@ public class UserServiceImpl implements UserService {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, authenticationRequestDto.getPassword()));
             User user = getUser(username);
 
-            String token = jwtTokenProvider.createToken(username, user.getRoles());
+            String token = jwtTokenProvider.createToken(username, user.getRole());
 
             Map<String, String> response = new HashMap<>();
             response.put("username", username);
@@ -114,19 +109,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registerAdmin(User user) {
-        Role userRole = Role.ADMIN;
-        List<Role> userRoles = new ArrayList<>();
-        userRoles.add(userRole);
+    public User registerAdmin(UserDto userDto) {
         Status userStatus = Status.ACTIVE;
         List<Status> userStatuses = new ArrayList<>();
         userStatuses.add(userStatus);
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(userRoles);
-        user.setStatuses(userStatuses);
-
-        return userRepository.save(user);
+        return userRepository.save(User.builder()
+                .name(userDto.getName() != null ? userDto.getName(): "UserName")
+                .surname(userDto.getSurname() != null ? userDto.getSurname(): "UserSurname")
+                .birthdate(userDto.getBirthdate())
+                .sex(userDto.getSex())
+                .email(userDto.getEmail())
+                .password(passwordEncoder.encode(userDto.getPassword()))
+                .role(Role.ADMIN)
+                .statuses(userStatuses)
+                .build());
     }
 
     @Override
@@ -140,7 +137,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(String email) {
+    public List<User> getAllByRole(Role role) {
+        return userRepository.findAllByRole(role);
+    }
+
+
+    @Override
+    public void delete(String email, String id) throws UserNotFoundException, UserNotRelatedException {
+        User user = getUser(email);
+        if (!user.getId().equals(id)){
+            throw new UserNotRelatedException("Users do not match");
+        }
         userRepository.deleteByEmail(email);
     }
 

@@ -47,7 +47,7 @@ public class SecurityBankConfig extends WebSecurityConfigurerAdapter {
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/register", "/login", "/pay-item/**")
+                .antMatchers("/user/register", "/user/login", "/pay-item/**")
                     .permitAll()
                 .antMatchers("/admin/*")
                     .hasRole(String.valueOf(ADMIN))

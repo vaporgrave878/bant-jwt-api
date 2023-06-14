@@ -1,4 +1,4 @@
-package com.bank.jwtapi.bankjwtapi.сontrollers;
+package com.bank.jwtapi.bankjwtapi.security.jwt;
 
 import com.bank.jwtapi.bankjwtapi.security.jwt.JwtUser;
 import lombok.extern.slf4j.Slf4j;

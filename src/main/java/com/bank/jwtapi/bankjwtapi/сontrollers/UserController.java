@@ -9,16 +9,14 @@ import com.bank.jwtapi.bankjwtapi.service.impl.UserServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
 import java.util.Map;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/user")
 public class UserController {
 
     private final UserServiceImpl userService;
@@ -48,15 +46,15 @@ public class UserController {
 //        return new ResponseEntity<>(result, HttpStatus.OK);
 //    }
 
-    @GetMapping("/user")
+    @GetMapping("/get-account-info")
     public User getUser(JwtUser jwtUser) throws UserNotFoundException {
-       return userService.getUser(jwtUser.getEmail());
+       return userService.findById(jwtUser.getId());
     }
 
-    @GetMapping("/send-message")
-    public void sendEmail(JwtUser jwtUser) throws MessagingException {
-        userService.sendVerificationEmail(jwtUser);
-    }
+//    @GetMapping("/send-message")
+//    public void sendEmail(JwtUser jwtUser) throws MessagingException {
+//        userService.sendVerificationEmail(jwtUser);
+//    }
 
 
     //TODO: move to service

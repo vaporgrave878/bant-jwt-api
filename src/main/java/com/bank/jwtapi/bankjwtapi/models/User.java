@@ -22,24 +22,12 @@ public class User {
     private String id;
     private String name;
     private String surname;
-//    @NotEmpty(message = "Date should not be empty")
-//    @Pattern(regexp = "^(?:0[1-9]|[12]\\d|3[01])([\\/.-])(?:0[1-9]|1[012])\\1(?:19|20)\\d\\d$")
     private String birthdate;
-//    @Size(min = 4, max = 6, message = "Enter valid sex")
     private String sex;
-//    @NotEmpty(message = "Email should not be empty")
-//    @Email
     private String email;
-//    @NotEmpty(message = "Password should not be empty")
-//    @Size(min = 4, max = 12, message = "Enter password in a range of 4 to 12")
     private String password;
-    @DBRef
-    private List<DebitCard> debitCards;
-    @DBRef
-    private List<Loan> loans;
-
-    private List<Role> roles;
-
+//    private List<Role> roles;
+    private Role role;
     private List<Status> statuses;
 
 
@@ -59,16 +47,16 @@ public class User {
 //        this.loans = loans;
 //    }
 //
-    public User(String name, String surname, String birthdate, String sex, String email, String password, List<DebitCard> debitCards, List<Loan> loans, List<Role> roles, List<Status> statuses) {
+    public User(String name, String surname, String birthdate, String sex, String email, String password,  Role role, List<Status> statuses) {
         this.name = name;
         this.surname = surname;
         this.birthdate = birthdate;
         this.sex = sex;
         this.email = email;
         this.password = password;
-        this.debitCards = debitCards;
-        this.loans = loans;
-        this.roles = roles;
+//        this.debitCards = debitCards;
+//        this.loans = loans;
+        this.role = role;
         this.statuses = statuses;
     }
 

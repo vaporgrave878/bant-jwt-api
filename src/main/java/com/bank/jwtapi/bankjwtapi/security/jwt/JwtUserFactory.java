@@ -12,27 +12,29 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class JwtUserFactory {
-    private static Long idCount = 0L;
+//    private static Long idCount = 0L;
 
 
     public static JwtUser create(User user){
         return new JwtUser(
-                idCount++,
+//                idCount++,
+                user.getId(),
                 user.getPassword(),
                 user.getEmail(),
                 user.getName(),
                 user.getStatuses().contains(Status.ACTIVE),
-                mapToGrantedAuthorities(new ArrayList<>(user.getRoles()))
+//                mapToGrantedAuthorities(new ArrayList<>(user.getRoles()))
+                List.of(new SimpleGrantedAuthority(user.getRole().toString()))
         );
     }
 
 
-    private static List<GrantedAuthority> mapToGrantedAuthorities(List<Role> userRoles) {
-        return userRoles.stream()
-                .map(role ->
-                        new SimpleGrantedAuthority("ROLE_" + role.toString())
-                ).collect(Collectors.toList());
-//        return List.of(new SimpleGrantedAuthority(user.getROle))
-    }
+//    private static List<GrantedAuthority> mapToGrantedAuthorities(List<Role> userRoles) {
+//        return userRoles.stream()
+//                .map(role ->
+//                        new SimpleGrantedAuthority("ROLE_" + role.toString())
+//                ).collect(Collectors.toList());
+////        return List.of(new SimpleGrantedAuthority(user.getROle))
+//    }
 }
 

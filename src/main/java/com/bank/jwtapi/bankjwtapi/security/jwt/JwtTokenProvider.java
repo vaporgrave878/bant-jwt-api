@@ -30,10 +30,6 @@ public class JwtTokenProvider {
     @Value("${jwt.token.expired}")
     private long tokenExpirationAfterDays;
 
-//    @Value("${application.jwt.tokenPrefix}")
-//    private String bearer;
-
-
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -43,15 +39,10 @@ public class JwtTokenProvider {
         return new BCryptPasswordEncoder();
     }
 
-//    @PostConstruct
-//    protected void init(){
-//        secret = Base64.getEncoder().encodeToString(secret.getBytes());
-//    }
-
-    public String createToken(String username, List<Role> roles) {
+    public String createToken(String username, Role role) {
 
         Claims claims = Jwts.claims().setSubject(username);
-        claims.put("roles", getRoleName(roles));
+        claims.put("roles", getRoleName(role));
 
         Date now = new Date();
         Date validateDate = new Date(now.getTime() + tokenExpirationAfterDays);
@@ -80,27 +71,17 @@ public class JwtTokenProvider {
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer_"))
-            return bearerToken.substring(7, bearerToken.length());//return bearerToken.substring(7, bearerToken.length());
+            return bearerToken.substring(7, bearerToken.length());
         return null;
     }
 
     public boolean validateToken(String token) {
-//        try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-
-
         return !claims.getBody().getExpiration().before(new Date());
-//        } catch (JwtException | IllegalArgumentException e) {
-//            throw new JwtAuthenticationException("JWT token is expired or invalid");
-//        }
     }
 
-    private List<String> getRoleName(List<Role> userRoles) {
-        List<String> result = new ArrayList<>();
-
-        userRoles.forEach(role -> result.add(role.toString()));
-
-        return result;
+    private String getRoleName(Role userRole) {
+        return userRole.name();
     }
 
 
